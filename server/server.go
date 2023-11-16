@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,29 +12,37 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 
 	"github.com/LaQuannT/shark-api/database"
 )
 
 func main() {
+	var Logger *logrus.Logger
+	Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
+		logrus.FieldKeyTime:  "@timestamp",
+		logrus.FieldKeyLevel: "@level",
+		logrus.FieldKeyMsg:   "@message",
+	}})
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalln("Error loading .env file")
+		Logger.Fatal("ENV: Failed to load .env file")
 	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatal("Error finding a port value")
+		Logger.Fatal("ENV: 'PORT' variable not set")
 	}
 
 	connstr := os.Getenv("DB_CONNSTR")
 	if connstr == "" {
-		log.Fatal("Error finding a database connection path")
+		Logger.Fatal("ENV: 'DB_CONNSTR' variable not set")
 	}
 
 	DB, err := database.Init(connstr)
 	if err != nil {
-		log.Fatalf("Database error: %v", err)
+		Logger.Fatalf("Database error: %v\n", err)
 	}
 
 	r := gin.Default()
@@ -47,9 +54,9 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Server is listening on port :%v", port)
+		Logger.Infof("Server is listening on port :%v", port)
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("Server ListenAndServe: %v\n", err)
+			Logger.Fatalf("Server ListenAndServe: %v\n", err)
 		}
 	}()
 
@@ -60,13 +67,13 @@ func main() {
 		syscall.SIGTERM,
 	)
 	<-quit
-	log.Println("Server shutting down...")
+	Logger.Info("Server shutting down...")
 
 	gracefullCtx, ShutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer ShutdownCancel()
 
 	if err := srv.Shutdown(gracefullCtx); err != nil {
-		log.Fatal("Server force shutdown:", err)
+		Logger.Fatalf("Server force shutdown:", err)
 	}
-	log.Println("goodbye...")
+	Logger.Info("Server exiting")
 }
