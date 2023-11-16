@@ -33,9 +33,9 @@ func main() {
 		log.Fatal("Error finding a database connection path")
 	}
 
-	DB, err := database.Connect(connstr)
+	DB, err := database.Init(connstr)
 	if err != nil {
-		log.Fatalf("Database connection error: %v", err)
+		log.Fatalf("Database error: %v", err)
 	}
 
 	r := gin.Default()
