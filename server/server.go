@@ -13,6 +13,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"github.com/LaQuannT/shark-api/database"
 )
 
 func main() {
@@ -23,15 +25,25 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatalln("Error finding a port value")
+		log.Fatal("Error finding a port value")
+	}
+
+	connstr := os.Getenv("DB_CONNSTR")
+	if connstr == "" {
+		log.Fatal("Error finding a database connection path")
+	}
+
+	DB, err := database.Connect(connstr)
+	if err != nil {
+		log.Fatalf("Database connection error: %v", err)
 	}
 
 	r := gin.Default()
 	r.Use(cors.Default())
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(`:%v`, port),
-		Handler:      r,
+		Addr:    fmt.Sprintf(`:%v`, port),
+		Handler: r,
 	}
 
 	go func() {
@@ -41,7 +53,7 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal,1)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(
 		quit,
 		syscall.SIGINT,
