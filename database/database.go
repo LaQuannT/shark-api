@@ -24,7 +24,7 @@ func connect(path string) (*sql.DB, error) {
 }
 
 func Init(path string) (*sql.DB, error) {
-	log.Println("Connection to databasse...")
+	log.Println("Connection to database...")
 	db, err := connect(path)
 	if err != nil {
 		return nil, err
