@@ -27,16 +27,18 @@ func fromRowToUser(row *sql.Rows) (*types.User, error) {
 	}, nil
 }
 
-func (r *UserRepo) CreateUser(u types.User) error {
-	_, err := r.db.Exec(`
+func (r *UserRepo) CreateUser(u types.User) (int, error) {
+	id := 0
+	err := r.db.QueryRow(`
     INSERT INTO 
     "user"(name, email, permission_level, api_key)
-    VALUES ($1, $2, $3, $4)`,
-		u.Name, u.Email, u.PermissionLevel, u.ApiKey)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id`,
+		u.Name, u.Email, u.PermissionLevel, u.ApiKey).Scan(&id)
 	if err != nil {
-		return err
+		return id, err
 	}
-	return nil
+	return id, nil
 }
 
 func (r *UserRepo) GetUser(id int) (*types.User, error) {
