@@ -15,15 +15,17 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/LaQuannT/shark-api/database"
+	"github.com/LaQuannT/shark-api/handlers"
 )
 
 func main() {
-	var Logger *logrus.Logger
+	Logger := logrus.New()
+
 	Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
-		logrus.FieldKeyTime:  "@timestamp",
-		logrus.FieldKeyLevel: "@level",
-		logrus.FieldKeyMsg:   "@message",
-	}})
+  logrus.FieldKeyTime:  "@timestamp",
+  logrus.FieldKeyLevel: "@level",
+  logrus.FieldKeyMsg:   "@message",
+ }})
 
 	err := godotenv.Load()
 	if err != nil {
@@ -47,6 +49,8 @@ func main() {
 
 	r := gin.Default()
 	r.Use(cors.Default())
+
+	handlers.InitHandlers(r, DB, Logger)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(`:%v`, port),
@@ -73,7 +77,7 @@ func main() {
 	defer ShutdownCancel()
 
 	if err := srv.Shutdown(gracefullCtx); err != nil {
-		Logger.Fatalf("Server force shutdown:", err)
+		Logger.Fatal("Server force shutdown:", err)
 	}
 	Logger.Info("Server exiting")
 }
