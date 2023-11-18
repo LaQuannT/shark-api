@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,18 +67,21 @@ func (h *UserHandler) HandleGetUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
 		h.Logger.Errorf("UserHandler/HandleGetUser/Atoi: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id param - must be a valid number"})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": "Invalid user id param - must be a valid number"},
+		)
 		return
 	}
 
-	U, err := h.Repo.GetUser(id)
+	u, err := h.Repo.GetUser(id)
 	if err != nil {
 		h.Logger.Errorf("UserHandler/HandleGetUser/GetUser: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"status": "User not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, U)
+	c.JSON(http.StatusOK, u)
 }
 
 func (h *UserHandler) HandleUpdateUser(c *gin.Context) {
@@ -86,7 +90,10 @@ func (h *UserHandler) HandleUpdateUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
 		h.Logger.Errorf("UserHandler/HandleGetUser/Atoi: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id param - must be a valid number"})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": "Invalid user id param - must be a valid number"},
+		)
 		return
 	}
 
@@ -100,7 +107,6 @@ func (h *UserHandler) HandleUpdateUser(c *gin.Context) {
 	if user.PermissionLevel != types.Admin {
 		user.PermissionLevel = types.Base
 	}
-
 
 	if err := h.Repo.UpdateUser(user); err != nil {
 		h.Logger.Errorf("UserHandler/HandleUpdateUser/UpdateUser: %v", err)
@@ -125,7 +131,10 @@ func (h *UserHandler) HandleDeleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
 		h.Logger.Errorf("UserHandler/HandleDeleteUser/Atoi: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id param - must be a valid number"})
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": "Invalid user id param - must be a valid number"},
+		)
 		return
 	}
 
@@ -134,4 +143,7 @@ func (h *UserHandler) HandleDeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	msg := fmt.Sprintf("User %d - successfully deleted", id)
+	c.JSON(http.StatusOK, gin.H{"message": msg})
 }
