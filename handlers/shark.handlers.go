@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/LaQuannT/shark-api/repository"
 	"github.com/LaQuannT/shark-api/types"
@@ -18,7 +21,12 @@ type SharkHandler struct {
 }
 
 type Search struct {
-	name string `form:"name"`
+	Name string `form:"name"`
+}
+
+func (s *Search) Stringf() {
+	c := cases.Title(language.English)
+	s.Name = c.String(strings.ToLower(s.Name))
 }
 
 func RegisterSharkHandlers(router *gin.Engine, repo *repository.SharkRepo, logger *logrus.Logger) {
@@ -78,7 +86,7 @@ func (h *SharkHandler) HandleGetSharkById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, s)
+	c.JSON(http.StatusOK, s)
 }
 
 func (h *SharkHandler) HandleGetSharkByName(c *gin.Context) {
@@ -90,7 +98,9 @@ func (h *SharkHandler) HandleGetSharkByName(c *gin.Context) {
 		return
 	}
 
-	shark, err := h.Repo.GetSharkByName(search.name)
+	search.Stringf()
+
+	shark, err := h.Repo.GetSharkByName(search.Name)
 	if err != nil {
 		h.Logger.Errorf("SharkHandler/HandleGetSharkByName/GetSharkByName: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

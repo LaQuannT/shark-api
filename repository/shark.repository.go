@@ -33,7 +33,7 @@ func (r *SharkRepo) CreateShark(s types.Shark) (int, error) {
 	err := r.db.QueryRow(`
     INSERT INTO shark (name, type, max_length, ocean, top_speed, attacks_per_year)
     VALUES ($1, $2, $3, $4, $5, $6)
-    RETURING id`,
+    RETURNING id`,
 		s.Name, s.Type, s.MaxLength, s.Ocean, s.TopSpeed, s.AttacksPerYear).Scan(&id)
 	if err != nil {
 		return id, err
