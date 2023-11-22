@@ -14,6 +14,5 @@ func InitHandlers(router *gin.Engine, db *sql.DB, log *logrus.Logger) {
 	srk := repository.NewSharkRepo(db)
 
 	RegisterUserHandlers(router, usr, log)
-	RegisterSharkHandlers(router, srk, log)
+	RegisterSharkHandlers(router, srk, usr, log)
 }
-

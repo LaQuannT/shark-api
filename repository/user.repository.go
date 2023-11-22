@@ -75,6 +75,27 @@ func (r *UserRepo) DeleteUser(id int) error {
 	return nil
 }
 
+func (r *UserRepo) CheckApiKey(key string) (bool, error) {
+	rows, err := r.db.Query(`SELECT * FROM "user" WHERE api_key = $1`, key)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user, err := fromRowToUser(rows)
+		if err != nil {
+			return false, err
+		}
+		if user.Id == 0 {
+			return false, nil
+		} else {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func NewUserRepo(db *sql.DB) *UserRepo {
 	return &UserRepo{db}
 }

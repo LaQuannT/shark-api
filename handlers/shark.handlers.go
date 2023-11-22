@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
+	"github.com/LaQuannT/shark-api/auth"
 	"github.com/LaQuannT/shark-api/repository"
 	"github.com/LaQuannT/shark-api/types"
 )
@@ -29,10 +30,15 @@ func (s *Search) Stringf() {
 	s.Name = c.String(strings.ToLower(s.Name))
 }
 
-func RegisterSharkHandlers(router *gin.Engine, repo *repository.SharkRepo, logger *logrus.Logger) {
+func RegisterSharkHandlers(
+	router *gin.Engine,
+	repo *repository.SharkRepo,
+	uRepo *repository.UserRepo,
+	logger *logrus.Logger,
+) {
 	h := &SharkHandler{Repo: repo, Logger: logger}
 
-	router.GET("/sharks", h.HandleGetSharkByName)
+	router.GET("/sharks", auth.ValidateApiKey(uRepo, logger), h.HandleGetSharkByName)
 	router.POST("/sharks", h.HandleCreateShark)
 	router.GET("/sharks/:sharkId", h.HandleGetSharkById)
 	router.PUT("/sharks/:sharkId", h.HandleUpdateShark)
